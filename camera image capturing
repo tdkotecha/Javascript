@@ -8,9 +8,7 @@
             // Grab elements, create settings, etc.
 		var video;
 		var malkontext;
-		var loadPixels;
-
-		
+				
 		function   verarbeiteVideostream(stream) // Video
 		{
 			video.src = window.URL.createObjectURL(stream);
@@ -35,8 +33,6 @@
 			navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream){verarbeiteVideostream(stream)});
 			}
 		}
-		
-		
 			
         </script>
     </head>
