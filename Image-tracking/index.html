@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script src="webcam.js"></script>
+<script src="tracking.js"></script>
+
+<div id="my_camera" style="width:320px; height:240px;"></div>
+<div id="rect"></div>
+<div id="my_result"></div>
+<div id="move"></div>
+
+<script language="JavaScript">
+    Webcam.set({
+        width: 320,
+        height: 240,
+        dest_width: 640,
+        dest_height: 480,
+        image_format: 'jpeg',
+        jpeg_quality: 90
+    });
+    Webcam.attach('#my_camera');
+
+    // Bestimmt ein Interval, indem die Screenshoots gemacht werden
+    // setInterval(take_snapshot, 1000);
+
+    function take_snapshot() {
+        Webcam.snap(function (data_uri) {
+            document.getElementById('my_result').innerHTML = '<img id="img" src="' + data_uri + '"/>';
+
+            // Audiosignal definieren
+            var audio = new Audio();
+            audio.src = 'audio_file.wav';
+
+            // Einstellung für rechte und linke Audiochanel
+            var context = new AudioContext();
+            var source = context.createMediaElementSource(audio);
+            context.listener.setPosition(0, 0, 0);
+            var panner = context.createPanner();
+            panner.setPosition(0, 0, 1);
+            source.connect(panner);
+            panner.connect(context.destination);
+
+            // Gesuchte Farbe definieren
+            tracking.ColorTracker.registerColor('white', function (r, g, b) {
+                return r > 100 && g > 100 && b > 100;
+            });
+
+            // Farbe hinzufügen
+            var colors = new tracking.ColorTracker(['white']);
+
+            // Event behandeln
+            colors.on('track', function (event) {
+                var move; // Bestimmt die Lenkrichtung
+                if (event.data.length === 0) {
+                    document.getElementById('rect').innerHTML = 'Farbe wurde nicht gefunden!';
+                    move = 'Track anhalten!';
+                } else {
+                    event.data.forEach(function (rect) {
+                        document.getElementById('rect').innerHTML = "x: " + rect.x + "; y: " + rect.y + "; width: " + rect.width + "; height: " + rect.height + "; color: " + rect.color;
+                        if (rect.x < 240) {
+                            move = 'Lenkrad nach links!';
+                            source.mediaElement.play();
+                            panner.setPosition(-1, 0, 0);
+                        } else if (rect.x + rect.width > 400) {
+                            move = 'Lenkrad nach rechts!';
+                            source.mediaElement.play();
+                            panner.setPosition(1, 0, 0);
+                        } else {
+                            move = 'Lenkrad grade!';
+                        }
+                    });
+                }
+
+                document.getElementById('move').innerHTML = move;
+            });
+
+            // Beobachten
+            tracking.track('#img', colors);
+        });
+    }
+</script>
+
+<a href="javascript:void(take_snapshot())">Take Snapshot</a>
+</body>
+</html>
