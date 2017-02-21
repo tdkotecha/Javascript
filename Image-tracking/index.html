@@ -25,7 +25,7 @@
     Webcam.attach('#my_camera');
 
     // Bestimmt ein Interval, indem die Screenshoots gemacht werden
-    // setInterval(take_snapshot, 1000);
+    setInterval(take_snapshot, 1000);
 
     function take_snapshot() {
         Webcam.snap(function (data_uri) {
